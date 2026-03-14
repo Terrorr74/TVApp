@@ -85,7 +85,10 @@ export default function SubscriptionsPage() {
     return (
       <div className="page subscriptions-page">
         <h1 className="page-title">Subscriptions</h1>
-        <p className="empty-message">No subscriptions yet. Visit a channel to subscribe.</p>
+        <div className="empty-state">
+          <div className="empty-state-icon">📺</div>
+          <div className="empty-state-text">No subscriptions yet. Visit a channel to subscribe.</div>
+        </div>
       </div>
     )
   }

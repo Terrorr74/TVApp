@@ -3,9 +3,9 @@ import { useFocusable, FocusContext } from '@noriginmedia/norigin-spatial-naviga
 import { useGoogleAuth } from '../../hooks/useGoogleAuth'
 
 const NAV_ITEMS = [
-  { label: 'Home', path: '/', focusKey: 'SIDEBAR_HOME' },
-  { label: 'Search', path: '/search', focusKey: 'SIDEBAR_SEARCH' },
-  { label: 'Subscriptions', path: '/subscriptions', focusKey: 'SIDEBAR_SUBS' },
+  { label: '🏠 Home', path: '/', focusKey: 'SIDEBAR_HOME' },
+  { label: '🔍 Search', path: '/search', focusKey: 'SIDEBAR_SEARCH' },
+  { label: '📋 Subscriptions', path: '/subscriptions', focusKey: 'SIDEBAR_SUBS' },
 ]
 
 function SidebarItem({
@@ -53,11 +53,13 @@ export default function Sidebar() {
             focusKey={item.focusKey}
           />
         ))}
-        <SidebarItem
-          label={isSignedIn ? '✓ Google' : 'Sign In'}
-          path="/signin"
-          focusKey="SIDEBAR_SIGNIN"
-        />
+        <div className="sidebar-footer">
+          <SidebarItem
+            label={isSignedIn ? '✓ Google' : 'Sign In'}
+            path="/signin"
+            focusKey="SIDEBAR_SIGNIN"
+          />
+        </div>
       </nav>
     </FocusContext.Provider>
   )

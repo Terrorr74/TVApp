@@ -31,7 +31,7 @@ function SubscribeButton({
       className={`subscribe-btn ${subscribed ? 'subscribe-btn--subscribed' : ''} ${focused ? 'focused' : ''}`}
       onClick={onToggle}
     >
-      {subscribed ? 'Unsubscribe' : 'Subscribe'}
+      {subscribed ? '✓ Subscribed' : 'Subscribe'}
     </button>
   )
 }
@@ -109,9 +109,14 @@ export default function ChannelPage() {
             <SubscribeButton subscribed={subscribed} onToggle={handleToggle} />
           </div>
         </div>
-        {videos.length === 0 && extraVideos.length === 0
-          ? <div className="empty-message">No videos available for this channel.</div>
-          : <VideoGrid videos={[...videos, ...extraVideos]} focusKey="CHANNEL_VIDEOS" />}
+        {videos.length === 0 && extraVideos.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">📭</div>
+            <div className="empty-state-text">No videos available for this channel.</div>
+          </div>
+        ) : (
+          <VideoGrid videos={[...videos, ...extraVideos]} focusKey="CHANNEL_VIDEOS" />
+        )}
         {nextpageToken && (
           <FocusableButton focusKey="CHANNEL_LOAD_MORE" onSelect={handleLoadMore}>
             Load more

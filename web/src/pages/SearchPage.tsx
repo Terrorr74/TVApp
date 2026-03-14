@@ -80,7 +80,10 @@ export default function SearchPage() {
       <TVKeyboard onKeyPress={handleKey} focusKey="TV_KEYBOARD" />
       {loading && debouncedQuery && <LoadingSpinner />}
       {!loading && debouncedQuery && items.length === 0 && (
-        <div className="empty-message">No results for "{debouncedQuery}"</div>
+        <div className="empty-state">
+          <div className="empty-state-icon">🔍</div>
+          <div className="empty-state-text">No results for "{debouncedQuery}"</div>
+        </div>
       )}
       {items.length > 0 && (
         <VideoGrid videos={items} focusKey="SEARCH_RESULTS" />

@@ -46,6 +46,7 @@ export default function PlayerControls({
         <div className="player-title">{title}</div>
         <div className="player-progress-bar">
           <div className="player-progress-fill" style={{ width: `${progress}%` }} />
+          <div className="player-progress-thumb" style={{ left: `${progress}%` }} />
         </div>
         <div className="player-time">
           {formatDuration(Math.floor(currentTime))} / {formatDuration(Math.floor(duration))}

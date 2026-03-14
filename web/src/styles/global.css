@@ -31,11 +31,11 @@ img {
 
 /* ── Focus ── */
 .focused {
-  outline: var(--focus-outline);
+  outline: 3px solid var(--accent);
   transform: scale(var(--focus-scale));
   transition: var(--focus-transition);
   z-index: 10;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.25), 0 0 24px rgba(255, 0, 0, 0.2);
 }
 
 /* ── Layout ── */
@@ -84,6 +84,14 @@ img {
 .sidebar-item.active {
   color: var(--text-primary);
   background: var(--bg-card);
+  border-left: 4px solid var(--accent);
+  padding-left: 20px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid #333;
+  padding-top: 16px;
 }
 
 /* ── Pages ── */
@@ -204,12 +212,139 @@ img {
   inset: 0;
   background: #000;
   z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.player-video-area {
+  position: relative;
+  width: 1920px;
+  height: 700px;
+  flex-shrink: 0;
 }
 
 .video-element {
   width: 1920px;
-  height: 1080px;
+  height: 700px;
   object-fit: contain;
+}
+
+.related-videos {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 48px;
+  scrollbar-width: none;
+}
+
+.related-title {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+}
+
+/* ── Resume Toast ── */
+.resume-toast {
+  position: absolute;
+  top: 24px;
+  left: 48px;
+  background: rgba(0, 0, 0, 0.85);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--accent);
+  animation: fadeInOut 2s ease forwards;
+  z-index: 200;
+}
+
+@keyframes fadeInOut {
+  0%   { opacity: 0; transform: translateY(-8px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Video End Overlay ── */
+.video-end-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+}
+
+.video-end-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  max-width: 900px;
+}
+
+.video-end-title {
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+}
+
+.video-end-hint {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+}
+
+.video-end-countdown {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.video-end-next-thumb {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: 16px;
+}
+
+.video-end-next-thumb img {
+  width: 240px;
+  height: 135px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.video-end-next-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-align: left;
+  max-width: 500px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.video-end-buttons {
+  display: flex;
+  gap: 24px;
+}
+
+.end-btn {
+  padding: 16px 40px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  transition: var(--focus-transition);
+}
+
+.end-btn--primary {
+  background: var(--accent);
 }
 
 /* ── Player Overlay ── */
@@ -246,18 +381,30 @@ img {
 
 .player-progress-bar {
   width: 100%;
-  height: 6px;
+  height: 8px;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
+  border-radius: 4px;
   margin-bottom: 12px;
-  overflow: hidden;
+  position: relative;
 }
 
 .player-progress-fill {
   height: 100%;
   background: var(--accent);
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.5s linear;
+}
+
+.player-progress-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transition: left 0.5s linear;
+  pointer-events: none;
 }
 
 .player-time {
@@ -401,9 +548,133 @@ img {
   margin-top: 40px;
 }
 
+/* ── Empty State ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 400px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 80px;
+  opacity: 0.4;
+}
+
+.empty-state-text {
+  font-size: var(--font-size-lg);
+}
+
+/* ── Channel meta ── */
+.channel-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Sign In Page ── */
+.signin-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.signin-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  text-align: center;
+  max-width: 800px;
+}
+
+.signin-content h1 {
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+}
+
+.signin-status {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+}
+
+.signin-hint {
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
+}
+
+.signin-error {
+  font-size: var(--font-size-base);
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+}
+
+.signin-device-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 40px 60px;
+}
+
+.signin-url {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+}
+
+.signin-code {
+  font-size: 72px;
+  font-weight: bold;
+  letter-spacing: 12px;
+  color: var(--accent);
+  font-family: monospace;
+}
+
+.signin-btn {
+  padding: 14px 40px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  transition: var(--focus-transition);
+}
+
+/* ── Error retry button ── */
+.error-retry-btn {
+  padding: 14px 40px;
+  background: var(--accent);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  transition: var(--focus-transition);
+}
+
+/* ── Video card meta row ── */
+.video-card-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Loading label ── */
+.loading-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+
 /* ── Common ── */
 .loading-spinner {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 400px;
