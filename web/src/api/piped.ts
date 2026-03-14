@@ -1,6 +1,6 @@
 import type { TrendingVideo, SearchResult, VideoStream, ChannelInfo } from './types'
 
-const BASE_URL = 'https://pipedapi.kavin.rocks'
+const BASE_URL = import.meta.env.VITE_PIPED_API_URL ?? 'https://pipedapi.kavin.rocks'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`)
