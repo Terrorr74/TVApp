@@ -149,9 +149,26 @@ SpatialNavProvider (root)
 └── SIDEBAR
 │   ├── SIDEBAR_HOME
 │   ├── SIDEBAR_SEARCH
-│   └── SIDEBAR_SUBS
-└── Page-level context (e.g. HOME_GRID, CHANNEL_PAGE, TV_KEYBOARD, PLAYER_CONTROLS)
-    └── Individual cards / keys / buttons
+│   ├── SIDEBAR_SUBS
+│   └── SIDEBAR_SIGNIN          ← "Sign In" / "✓ Google" link (bottom of sidebar)
+└── Page-level context
+    ├── HOME_GRID               ← HomePage trending grid
+    ├── SEARCH_PAGE             ← SearchPage (TV_KEYBOARD + SEARCH_RESULTS)
+    │   ├── TV_KEYBOARD
+    │   └── SEARCH_RESULTS
+    ├── CHANNEL_PAGE            ← ChannelPage header + CHANNEL_VIDEOS grid
+    │   └── CHANNEL_VIDEOS
+    ├── PLAYER_CONTROLS         ← PlayerPage (shown when video is playing)
+    │   ├── CTRL_BACK           ← "← Back" button
+    │   ├── CTRL_REWIND         ← "⏮ -10s"
+    │   ├── CTRL_PLAYPAUSE      ← "▶ Play" / "⏸ Pause"
+    │   └── CTRL_FORWARD        ← "+10s ⏭"
+    ├── VIDEO_END_OVERLAY       ← PlayerPage (shown when video ends)
+    │   ├── END_NEXT            ← "▶ Play Now (Xs)" — only when next video exists
+    │   └── END_BACK            ← "← Back to Menu"
+    ├── RELATED_VIDEOS          ← "Up Next" grid below the player
+    ├── SUBS_PAGE               ← SubscriptionsPage
+    └── ERROR_RETRY             ← Retry button on ErrorScreen
 ```
 
 Each page sets initial focus programmatically via `useSetFocus` in a `useEffect`.

@@ -21,6 +21,7 @@ Active PRDs and implementation plans.
 | [Fix Video Playback](./Tasks/fix-video-playback.md) | ✅ Resolved | Replaced Piped stream backend with yt-dlp proxy (Option C) |
 | [TVApp Improvement Plan](./Tasks/tvapp-improvement-plan.md) | ✅ Complete | 3-phase plan: restore playback, fix UX bugs, add TV features |
 | [Google Account Connection](./Tasks/google-auth.md) | 🟡 In Progress | Code complete — needs Google Cloud credentials to activate |
+| [Player UX Improvements](./Tasks/player-ux-improvements.md) | ✅ Complete | Back button in controls + end-of-video overlay with next-video countdown |
 
 ---
 
