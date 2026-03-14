@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSetFocus } from '../hooks/useSetFocus'
-import { usePipedQuery } from '../hooks/usePipedQuery'
-import { search } from '../api/piped'
+import { search, searchNextPage } from '../api/piped'
 import TVKeyboard from '../components/keyboard/TVKeyboard'
 import VideoGrid from '../components/grid/VideoGrid'
 import LoadingSpinner from '../components/common/LoadingSpinner'
+import FocusableButton from '../components/common/FocusableButton'
 import type { TrendingVideo, SearchItem } from '../api/types'
 
 function isStream(item: SearchItem): item is SearchItem & TrendingVideo {
@@ -17,9 +17,29 @@ export default function SearchPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const setFocus = useSetFocus()
 
+  const [items, setItems] = useState<TrendingVideo[]>([])
+  const [nextpageToken, setNextpageToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
     setFocus('TV_KEYBOARD')
   }, [setFocus])
+
+  useEffect(() => {
+    setItems([])
+    setNextpageToken(null)
+  }, [debouncedQuery])
+
+  useEffect(() => {
+    if (!debouncedQuery) return
+    setLoading(true)
+    search(debouncedQuery)
+      .then((result) => {
+        setItems(result.items.filter(isStream) as unknown as TrendingVideo[])
+        setNextpageToken(result.nextpage ?? null)
+      })
+      .finally(() => setLoading(false))
+  }, [debouncedQuery])
 
   const handleKey = (key: string) => {
     setQuery((prev) => {
@@ -43,14 +63,13 @@ export default function SearchPage() {
     })
   }
 
-  const { data, loading } = usePipedQuery(
-    () => search(debouncedQuery),
-    [debouncedQuery]
-  )
-
-  const videoResults: TrendingVideo[] = debouncedQuery && data
-    ? (data.items.filter(isStream) as unknown as TrendingVideo[])
-    : []
+  const handleLoadMore = () => {
+    if (!nextpageToken) return
+    searchNextPage(debouncedQuery, nextpageToken).then((result) => {
+      setItems((prev) => [...prev, ...(result.items.filter(isStream) as unknown as TrendingVideo[])])
+      setNextpageToken(result.nextpage ?? null)
+    })
+  }
 
   return (
     <div className="page search-page">
@@ -60,8 +79,16 @@ export default function SearchPage() {
       </div>
       <TVKeyboard onKeyPress={handleKey} focusKey="TV_KEYBOARD" />
       {loading && debouncedQuery && <LoadingSpinner />}
-      {videoResults.length > 0 && (
-        <VideoGrid videos={videoResults} focusKey="SEARCH_RESULTS" />
+      {!loading && debouncedQuery && items.length === 0 && (
+        <div className="empty-message">No results for "{debouncedQuery}"</div>
+      )}
+      {items.length > 0 && (
+        <VideoGrid videos={items} focusKey="SEARCH_RESULTS" />
+      )}
+      {nextpageToken && (
+        <FocusableButton focusKey="SEARCH_LOAD_MORE" onSelect={handleLoadMore}>
+          Load more
+        </FocusableButton>
       )}
     </div>
   )

@@ -1,13 +1,14 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useFocusable, FocusContext } from '@noriginmedia/norigin-spatial-navigation'
 import { usePipedQuery } from '../hooks/usePipedQuery'
 import { useSubscriptions } from '../hooks/useSubscriptions'
 import { useSetFocus } from '../hooks/useSetFocus'
-import { getChannel } from '../api/piped'
+import { getChannel, getChannelNextPage } from '../api/piped'
 import VideoGrid from '../components/grid/VideoGrid'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorScreen from '../components/common/ErrorScreen'
+import FocusableButton from '../components/common/FocusableButton'
 import type { TrendingVideo } from '../api/types'
 
 function SubscribeButton({
@@ -39,17 +40,27 @@ export default function ChannelPage() {
   const setFocus = useSetFocus()
   const { ref, focusKey } = useFocusable({ focusKey: 'CHANNEL_PAGE' })
 
-  const { data, loading, error } = usePipedQuery(
+  const { data, loading, error, refetch } = usePipedQuery(
     () => getChannel(channelId!),
     [channelId]
   )
+
+  const [extraVideos, setExtraVideos] = useState<TrendingVideo[]>([])
+  const [nextpageToken, setNextpageToken] = useState<string | null>(null)
 
   useEffect(() => {
     setFocus('SUBSCRIBE_BTN')
   }, [setFocus])
 
+  useEffect(() => {
+    if (data) {
+      setNextpageToken(data.nextpage ?? null)
+      setExtraVideos([])
+    }
+  }, [data])
+
   if (loading) return <LoadingSpinner />
-  if (error) return <ErrorScreen message={error} />
+  if (error) return <ErrorScreen message={error} onRetry={refetch} />
   if (!data) return null
 
   const subscribed = isSubscribed(channelId!)
@@ -60,6 +71,14 @@ export default function ChannelPage() {
     } else {
       subscribe({ channelId: channelId!, name: data.name, avatarUrl: data.avatarUrl })
     }
+  }
+
+  const handleLoadMore = () => {
+    if (!nextpageToken) return
+    getChannelNextPage(channelId!, nextpageToken).then((result) => {
+      setExtraVideos((prev) => [...prev, ...(result.relatedStreams as unknown as TrendingVideo[])])
+      setNextpageToken(result.nextpage ?? null)
+    })
   }
 
   // Channel videos share the same shape as TrendingVideo for our VideoGrid
@@ -80,8 +99,13 @@ export default function ChannelPage() {
             <SubscribeButton subscribed={subscribed} onToggle={handleToggle} />
           </div>
         </div>
-        {videos.length > 0 && (
-          <VideoGrid videos={videos} focusKey="CHANNEL_VIDEOS" />
+        {videos.length === 0 && extraVideos.length === 0
+          ? <div className="empty-message">No videos available for this channel.</div>
+          : <VideoGrid videos={[...videos, ...extraVideos]} focusKey="CHANNEL_VIDEOS" />}
+        {nextpageToken && (
+          <FocusableButton focusKey="CHANNEL_LOAD_MORE" onSelect={handleLoadMore}>
+            Load more
+          </FocusableButton>
         )}
       </div>
     </FocusContext.Provider>

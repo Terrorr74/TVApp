@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useMatch } from 'react-router-dom'
 import { useFocusable, FocusContext } from '@noriginmedia/norigin-spatial-navigation'
 
 const NAV_ITEMS = [
@@ -11,14 +11,15 @@ function SidebarItem({
   label,
   path,
   focusKey,
-  active,
 }: {
   label: string
   path: string
   focusKey: string
-  active: boolean
 }) {
   const navigate = useNavigate()
+  const match = useMatch(path === '/' ? { path: '/', end: true } : path)
+  const isActive = !!match
+
   const { ref, focused } = useFocusable({
     focusKey,
     onEnterPress: () => navigate(path),
@@ -27,7 +28,7 @@ function SidebarItem({
   return (
     <div
       ref={ref}
-      className={`sidebar-item ${focused ? 'focused' : ''} ${active ? 'active' : ''}`}
+      className={`sidebar-item ${focused ? 'focused' : ''} ${isActive ? 'active' : ''}`}
       onClick={() => navigate(path)}
     >
       {label}
@@ -36,7 +37,6 @@ function SidebarItem({
 }
 
 export default function Sidebar() {
-  const location = useLocation()
   const { ref, focusKey } = useFocusable({ focusKey: 'SIDEBAR' })
 
   return (
@@ -49,7 +49,6 @@ export default function Sidebar() {
             label={item.label}
             path={item.path}
             focusKey={item.focusKey}
-            active={location.pathname === item.path}
           />
         ))}
       </nav>

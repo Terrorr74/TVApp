@@ -1,6 +1,6 @@
 import type { TrendingVideo, SearchResult, VideoStream, ChannelInfo } from './types'
 
-const BASE_URL = import.meta.env.VITE_PIPED_API_URL ?? 'https://pipedapi.kavin.rocks'
+const BASE_URL = import.meta.env.VITE_PIPED_API_URL ?? 'http://localhost:8081'
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`)
@@ -22,6 +22,14 @@ export function getStreams(videoId: string): Promise<VideoStream> {
 
 export function getChannel(channelId: string): Promise<ChannelInfo> {
   return apiFetch<ChannelInfo>(`/channel/${channelId}`)
+}
+
+export function searchNextPage(query: string, nextpage: string): Promise<SearchResult> {
+  return apiFetch<SearchResult>(`/search?q=${encodeURIComponent(query)}&filter=all&nextpage=${encodeURIComponent(nextpage)}`)
+}
+
+export function getChannelNextPage(channelId: string, nextpage: string): Promise<ChannelInfo> {
+  return apiFetch<ChannelInfo>(`/nextpage/channel/${channelId}?nextpage=${encodeURIComponent(nextpage)}`)
 }
 
 /** Parses a Piped watch URL like /watch?v=ID or https://...?v=ID into the video ID */
@@ -53,6 +61,18 @@ export function formatDuration(seconds: number): string {
     return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
   }
   return `${m}:${String(s).padStart(2, '0')}`
+}
+
+/** Parses a relative date string like "3 days ago" into seconds-ago (lower = more recent) */
+export function parseRelativeDate(str: string): number {
+  const m = str.match(/(\d+)\s+(second|minute|hour|day|week|month|year)/)
+  if (!m) return Infinity
+  const n = parseInt(m[1])
+  const units: Record<string, number> = {
+    second: 1, minute: 60, hour: 3600, day: 86400,
+    week: 604800, month: 2592000, year: 31536000,
+  }
+  return n * (units[m[2]] ?? Infinity)
 }
 
 /** Format large view counts */

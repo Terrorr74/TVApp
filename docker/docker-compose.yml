@@ -51,5 +51,12 @@ services:
       timeout: 5s
       retries: 10
 
+  yt-dlp-proxy:
+    build: ./yt-dlp-proxy
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    container_name: yt-dlp-proxy
+
 volumes:
   db-data:

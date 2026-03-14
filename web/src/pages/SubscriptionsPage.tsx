@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSetFocus } from '../hooks/useSetFocus'
 import { useSubscriptions } from '../hooks/useSubscriptions'
-import { getChannel } from '../api/piped'
+import { getChannel, parseRelativeDate } from '../api/piped'
 import VideoGrid from '../components/grid/VideoGrid'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import type { TrendingVideo } from '../api/types'
@@ -18,14 +18,9 @@ async function fetchBatch(channelIds: string[]): Promise<TrendingVideo[]> {
 }
 
 function sortByDate(videos: TrendingVideo[]): TrendingVideo[] {
-  return [...videos].sort((a, b) => {
-    // uploadedDate is a relative string like "3 days ago" — use position as proxy
-    // For proper sorting we'd need timestamps; sort by views as a reasonable fallback
-    if (a.uploadedDate && b.uploadedDate) {
-      return a.uploadedDate < b.uploadedDate ? 1 : -1
-    }
-    return b.views - a.views
-  })
+  return [...videos].sort((a, b) =>
+    parseRelativeDate(a.uploadedDate) - parseRelativeDate(b.uploadedDate)
+  )
 }
 
 export default function SubscriptionsPage() {
@@ -46,15 +41,16 @@ export default function SubscriptionsPage() {
 
     let cancelled = false
     ;(async () => {
-      const allVideos: TrendingVideo[] = []
-      for (const batch of batches) {
-        if (cancelled) return
-        const batchVideos = await fetchBatch(batch)
-        allVideos.push(...batchVideos)
-      }
-      if (!cancelled) {
-        setVideos(sortByDate(allVideos))
-        setLoading(false)
+      try {
+        const allVideos: TrendingVideo[] = []
+        for (const batch of batches) {
+          if (cancelled) return
+          const batchVideos = await fetchBatch(batch)
+          allVideos.push(...batchVideos)
+        }
+        if (!cancelled) setVideos(sortByDate(allVideos))
+      } finally {
+        if (!cancelled) setLoading(false)
       }
     })()
 

@@ -1,20 +1,22 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 interface QueryState<T> {
   data: T | null
   loading: boolean
   error: string | null
+  refetch: () => void
 }
 
 export function usePipedQuery<T>(
   fetcher: () => Promise<T>,
   deps: unknown[] = []
 ): QueryState<T> {
-  const [state, setState] = useState<QueryState<T>>({
+  const [state, setState] = useState<Omit<QueryState<T>, 'refetch'>>({
     data: null,
     loading: true,
     error: null,
   })
+  const [retryCount, setRetryCount] = useState(0)
 
   const fetcherRef = useRef(fetcher)
   fetcherRef.current = fetcher
@@ -38,7 +40,9 @@ export function usePipedQuery<T>(
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
+  }, [...deps, retryCount])
 
-  return state
+  const refetch = useCallback(() => setRetryCount((c) => c + 1), [])
+
+  return { ...state, refetch }
 }
