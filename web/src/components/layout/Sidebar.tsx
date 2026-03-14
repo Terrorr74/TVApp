@@ -1,5 +1,6 @@
 import { useNavigate, useMatch } from 'react-router-dom'
 import { useFocusable, FocusContext } from '@noriginmedia/norigin-spatial-navigation'
+import { useGoogleAuth } from '../../hooks/useGoogleAuth'
 
 const NAV_ITEMS = [
   { label: 'Home', path: '/', focusKey: 'SIDEBAR_HOME' },
@@ -38,6 +39,7 @@ function SidebarItem({
 
 export default function Sidebar() {
   const { ref, focusKey } = useFocusable({ focusKey: 'SIDEBAR' })
+  const { isSignedIn } = useGoogleAuth()
 
   return (
     <FocusContext.Provider value={focusKey}>
@@ -51,6 +53,11 @@ export default function Sidebar() {
             focusKey={item.focusKey}
           />
         ))}
+        <SidebarItem
+          label={isSignedIn ? '✓ Google' : 'Sign In'}
+          path="/signin"
+          focusKey="SIDEBAR_SIGNIN"
+        />
       </nav>
     </FocusContext.Provider>
   )

@@ -5,6 +5,8 @@ import { usePipedQuery } from '../hooks/usePipedQuery'
 import { useSubscriptions } from '../hooks/useSubscriptions'
 import { useSetFocus } from '../hooks/useSetFocus'
 import { getChannel, getChannelNextPage } from '../api/piped'
+import { subscribeToChannel, unsubscribeFromChannel, getSubscriptionId } from '../api/youtubeApi'
+import { useGoogleAuth } from '../hooks/useGoogleAuth'
 import VideoGrid from '../components/grid/VideoGrid'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorScreen from '../components/common/ErrorScreen'
@@ -37,6 +39,7 @@ function SubscribeButton({
 export default function ChannelPage() {
   const { channelId } = useParams<{ channelId: string }>()
   const { subscribe, unsubscribe, isSubscribed } = useSubscriptions()
+  const { isSignedIn } = useGoogleAuth()
   const setFocus = useSetFocus()
   const { ref, focusKey } = useFocusable({ focusKey: 'CHANNEL_PAGE' })
 
@@ -65,11 +68,18 @@ export default function ChannelPage() {
 
   const subscribed = isSubscribed(channelId!)
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
     if (subscribed) {
       unsubscribe(channelId!)
+      if (isSignedIn) {
+        const subId = await getSubscriptionId(channelId!).catch(() => null)
+        if (subId) unsubscribeFromChannel(subId).catch(() => {})
+      }
     } else {
       subscribe({ channelId: channelId!, name: data.name, avatarUrl: data.avatarUrl })
+      if (isSignedIn) {
+        subscribeToChannel(channelId!).catch(() => {})
+      }
     }
   }
 

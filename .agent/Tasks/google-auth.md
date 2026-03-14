@@ -1,7 +1,7 @@
 # Task: Google Account Connection
 
 ## Status
-⬜ Planned
+🟡 In Progress — code complete, awaiting Google Cloud credentials (2026-03-14)
 
 ## Goal
 
@@ -154,13 +154,31 @@ Tokens stored in `localStorage` under `tvapp_google_tokens`:
 
 ## Acceptance Criteria
 
-- [ ] User can initiate sign-in from the sidebar
-- [ ] Sign-in page displays device code and verification URL
-- [ ] After authorisation on phone, app receives tokens and navigates home
-- [ ] Subscriptions page shows YouTube subscriptions merged with local ones
-- [ ] Subscribe/unsubscribe on ChannelPage writes to YouTube (when signed in)
-- [ ] Token refreshes automatically before expiry
-- [ ] Sign-out clears tokens and reverts to local-only mode
+- [x] User can initiate sign-in from the sidebar
+- [x] Sign-in page displays device code and verification URL
+- [x] After authorisation on phone, app receives tokens and navigates home
+- [x] Subscriptions page shows YouTube subscriptions merged with local ones
+- [x] Subscribe/unsubscribe on ChannelPage writes to YouTube (when signed in)
+- [x] Token refreshes automatically before expiry
+- [x] Sign-out clears tokens and reverts to local-only mode
+
+## Pending (requires user action)
+
+- [ ] Create Google Cloud project and enable YouTube Data API v3
+- [ ] Create OAuth 2.0 credentials (TV and Limited Input devices type)
+- [ ] Add `VITE_GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_SECRET` to `web/.env.local`
+
+## Implementation Notes
+
+**`googleAuth.ts`** — Device Authorization Grant (RFC 8628): `startDeviceFlow()` POSTs to `oauth2.googleapis.com/device/code`; `pollForToken()` polls the token endpoint, returns `null` on `authorization_pending`, tokens on success, throws on hard errors. `getValidToken()` auto-refreshes 60 seconds before expiry.
+
+**`youtubeApi.ts`** — All calls go through `ytFetch()` which calls `getValidToken()` before each request. `getMySubscriptions()` pages through all results. `getSubscriptionId()` is used by ChannelPage to look up the resource ID needed to unsubscribe.
+
+**`useGoogleAuth.ts`** — Thin React wrapper around `loadTokens()`; listens to `storage` events for cross-tab sync. Exposes `isSignedIn`, `signOut`, and `onSignedIn` (called by SignInPage on success).
+
+**`SignInPage.tsx`** — Four states: `idle`, `loading`, `waiting` (code shown + polling), `error`. Polling interval taken from device flow response. Cleans up `setInterval` on unmount.
+
+**UI integration** — Sidebar shows "Sign In" / "✓ Google" based on auth state. SubscriptionsPage merges local + YouTube subs on mount when signed in. ChannelPage calls YouTube API in parallel with local state on subscribe/unsubscribe.
 
 ---
 

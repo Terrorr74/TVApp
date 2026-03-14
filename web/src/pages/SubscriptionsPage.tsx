@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useSetFocus } from '../hooks/useSetFocus'
 import { useSubscriptions } from '../hooks/useSubscriptions'
+import { useGoogleAuth } from '../hooks/useGoogleAuth'
 import { getChannel, parseRelativeDate } from '../api/piped'
+import { getMySubscriptions } from '../api/youtubeApi'
 import VideoGrid from '../components/grid/VideoGrid'
 import LoadingSpinner from '../components/common/LoadingSpinner'
-import type { TrendingVideo } from '../api/types'
+import type { TrendingVideo, Subscription } from '../api/types'
 
 async function fetchBatch(channelIds: string[]): Promise<TrendingVideo[]> {
   const results = await Promise.allSettled(channelIds.map((id) => getChannel(id)))
@@ -24,10 +26,26 @@ function sortByDate(videos: TrendingVideo[]): TrendingVideo[] {
 }
 
 export default function SubscriptionsPage() {
-  const { subscriptions } = useSubscriptions()
+  const { subscriptions: localSubs } = useSubscriptions()
+  const { isSignedIn } = useGoogleAuth()
   const setFocus = useSetFocus()
   const [videos, setVideos] = useState<TrendingVideo[]>([])
   const [loading, setLoading] = useState(false)
+
+  // Merge local subs with YouTube subs (deduped by channelId) when signed in
+  const [mergedSubs, setMergedSubs] = useState<Subscription[]>(localSubs)
+  useEffect(() => {
+    if (!isSignedIn) { setMergedSubs(localSubs); return }
+    getMySubscriptions()
+      .then((ytSubs) => {
+        const seen = new Set(localSubs.map((s) => s.channelId))
+        const combined = [...localSubs, ...ytSubs.filter((s) => !seen.has(s.channelId))]
+        setMergedSubs(combined)
+      })
+      .catch(() => setMergedSubs(localSubs))
+  }, [isSignedIn, localSubs])
+
+  const subscriptions = mergedSubs
 
   useEffect(() => {
     if (subscriptions.length === 0) return

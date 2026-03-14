@@ -27,11 +27,14 @@ TVApp/
 │   └── src/
 │       ├── api/
 │       │   ├── piped.ts          # API client + helper utilities (extractVideoId, formatDuration, etc.)
+│       │   ├── googleAuth.ts     # OAuth Device Flow: startDeviceFlow, pollForToken, getValidToken
+│       │   ├── youtubeApi.ts     # YouTube Data API v3: getMySubscriptions, subscribeToChannel, getLikedVideos
 │       │   └── types.ts          # TypeScript interfaces (TrendingVideo, VideoStream, ChannelInfo, etc.)
 │       ├── hooks/
 │       │   ├── usePipedQuery.ts  # Generic async data fetcher with cancellation + refetch
 │       │   ├── usePlayer.ts      # hls.js lifecycle management; returns { hlsRef, hlsError }
 │       │   ├── useWatchProgress.ts # localStorage watch position save/restore per videoId
+│       │   ├── useGoogleAuth.ts  # Google sign-in state (isSignedIn, signOut, onSignedIn)
 │       │   ├── useSubscriptions.ts # localStorage-backed subscribe/unsubscribe
 │       │   └── useSetFocus.ts    # Programmatic spatial nav focus setter
 │       ├── navigation/
@@ -95,7 +98,8 @@ Uses `HashRouter` (required for `file://` asset loading in Android WebView).
 | `/search` | `SearchPage` | On-screen keyboard; debounced 500 ms auto-search |
 | `/player/:videoId` | `PlayerPage` | Full-screen; renders outside `AppLayout` (no sidebar) |
 | `/channel/:channelId` | `ChannelPage` | Channel header + video grid + subscribe button |
-| `/subscriptions` | `SubscriptionsPage` | Channels from `localStorage` |
+| `/subscriptions` | `SubscriptionsPage` | Local subs merged with YouTube subs when signed in |
+| `/signin` | `SignInPage` | Google OAuth Device Flow; shows user code + URL |
 
 ---
 
@@ -174,8 +178,9 @@ Handled in `PlayerPage.tsx` for media controls. D-pad navigation is handled glob
 
 | Key | Value | Purpose |
 |---|---|---|
-| `tvapp_subscriptions` | `Subscription[]` JSON | Channel subscriptions |
+| `tvapp_subscriptions` | `Subscription[]` JSON | Local channel subscriptions |
 | `tvapp_progress_${videoId}` | Number (seconds) | Watch position per video |
+| `tvapp_google_tokens` | `GoogleTokens` JSON | OAuth access + refresh tokens + expiry |
 
 The WebView has `domStorageEnabled = true`. No server-side user state exists.
 
