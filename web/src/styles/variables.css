@@ -1,0 +1,27 @@
+:root {
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #242424;
+  --bg-card-hover: #2e2e2e;
+  --accent: #ff0000;
+  --accent-hover: #cc0000;
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+  --text-muted: #666666;
+
+  --card-width: 300px;
+  --card-height: 180px;
+  --card-gap: 20px;
+
+  --font-size-base: 24px;
+  --font-size-sm: 18px;
+  --font-size-lg: 32px;
+  --font-size-xl: 48px;
+
+  --sidebar-width: 200px;
+  --border-radius: 8px;
+
+  --focus-outline: 3px solid #ffffff;
+  --focus-scale: 1.08;
+  --focus-transition: transform 0.1s ease, box-shadow 0.1s ease;
+}

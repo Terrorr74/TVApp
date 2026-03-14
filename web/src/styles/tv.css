@@ -1,0 +1,14 @@
+/* TV-specific: disable all pointer interaction, fix 1920×1080 canvas */
+* {
+  cursor: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+html,
+body,
+#root {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+}

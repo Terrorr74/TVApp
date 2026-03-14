@@ -1,0 +1,15 @@
+## Web
+web/node_modules/
+web/dist/
+
+## Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.iml
+.idea/
+
+## OS
+.DS_Store
+Thumbs.db
