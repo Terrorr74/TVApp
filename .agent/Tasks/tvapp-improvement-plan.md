@@ -23,12 +23,14 @@ Restore core playback, fix everyday UX bugs, and add high-value TV features acro
 
 **What was built:** A Flask server (`docker/yt-dlp-proxy/server.py`) that wraps `yt-dlp --dump-json` and exposes the same 4-endpoint API shape as Piped:
 
-- `GET /trending?region=US` → `TrendingVideo[]`
-- `GET /search?q=...&filter=all` → `{ items, nextpage: null, suggestion: null, corrected: false }`
-- `GET /streams/<videoId>` → `VideoStream` with `.hls` set to the best `m3u8_native` format URL
+- `GET /trending?region=US` → `TrendingVideo[]` (uses `ytsearch30:trending music videos 2026` — YouTube's trending feed is geo-blocked from server IPs)
+- `GET /search?q=...&filter=all` → `{ items, nextpage: null, suggestion: null, corrected: false }` (uses `--dump-single-json --flat-playlist` for correct JSON output)
+- `GET /streams/<videoId>` → `VideoStream` with `.hls` set to the best available stream URL
 - `GET /channel/<channelId>` → `ChannelInfo`
 
 All responses include `Access-Control-Allow-Origin: *`.
+
+**Stream format selection** (`/streams` endpoint): prefers `m3u8` HLS format (played via hls.js); falls back to the highest-resolution combined mp4 format (both `vcodec` and `acodec` non-null, `ext == mp4`) when YouTube doesn't serve HLS. `usePlayer.ts` detects the format type by checking for `m3u8` in the URL — HLS goes through hls.js, mp4 is assigned directly to `video.src`.
 
 Added to `docker-compose.yml` as `yt-dlp-proxy` service on port **8083**.
 Updated `web/.env.local`: `VITE_PIPED_API_URL=http://localhost:8083`.
@@ -46,7 +48,7 @@ if (!data.hls) return <ErrorScreen message="No stream available for this video."
 
 ### 1.4 — HLS error handling
 
-`usePlayer.ts`: added `hlsError` state (initially `null`, reset on each new URL). Hls.js `ERROR` event sets it when `data.fatal` is true. Return signature changed from `hlsRef` to `{ hlsRef, hlsError }`.
+`usePlayer.ts`: added `hlsError` state (initially `null`, reset on each new URL). Detects stream type by checking for `m3u8` in the URL: HLS streams go through hls.js (with fatal error reporting via `hlsError`); non-HLS URLs (e.g. direct mp4) are assigned to `video.src` directly and autoplay is attempted. Return signature changed from `hlsRef` to `{ hlsRef, hlsError }`.
 
 `VideoPlayer.tsx`: accepts new `onError?: (msg: string) => void` prop. A `useEffect` watches `hlsError` and calls `onError` whenever it becomes non-null.
 
