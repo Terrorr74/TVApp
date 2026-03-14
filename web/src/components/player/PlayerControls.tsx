@@ -7,6 +7,7 @@ interface Props {
   duration: number
   onPlayPause: () => void
   onSeek: (delta: number) => void
+  onBack: () => void
   title: string
 }
 
@@ -33,6 +34,7 @@ export default function PlayerControls({
   duration,
   onPlayPause,
   onSeek,
+  onBack,
   title,
 }: Props) {
   const { ref, focusKey } = useFocusable({ focusKey: 'PLAYER_CONTROLS' })
@@ -49,6 +51,7 @@ export default function PlayerControls({
           {formatDuration(Math.floor(currentTime))} / {formatDuration(Math.floor(duration))}
         </div>
         <div className="player-buttons">
+          <ControlButton label="← Back" focusKey="CTRL_BACK" onSelect={onBack} />
           <ControlButton label="⏮ -10s" focusKey="CTRL_REWIND" onSelect={() => onSeek(-10)} />
           <ControlButton
             label={playing ? '⏸ Pause' : '▶ Play'}

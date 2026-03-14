@@ -7,9 +7,11 @@ import { getStreams, formatDuration } from '../api/piped'
 import VideoPlayer from '../components/player/VideoPlayer'
 import PlayerControls from '../components/player/PlayerControls'
 import PlayerOverlay from '../components/player/PlayerOverlay'
+import VideoEndOverlay from '../components/player/VideoEndOverlay'
 import VideoGrid from '../components/grid/VideoGrid'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorScreen from '../components/common/ErrorScreen'
+import { extractVideoId } from '../api/piped'
 
 export default function PlayerPage() {
   const { videoId } = useParams<{ videoId: string }>()
@@ -20,6 +22,7 @@ export default function PlayerPage() {
   const [duration, setDuration] = useState(0)
   const [playerError, setPlayerError] = useState<string | null>(null)
   const [resumeToast, setResumeToast] = useState<string | null>(null)
+  const [videoEnded, setVideoEnded] = useState(false)
   const lastSaveRef = useRef(0)
   const setFocus = useSetFocus()
   const { savedPosition, savePosition } = useWatchProgress(videoId!)
@@ -34,8 +37,9 @@ export default function PlayerPage() {
     const video = videoRef.current
     if (!video) return
 
-    const onPlay = () => setPlaying(true)
+    const onPlay = () => { setPlaying(true); setVideoEnded(false) }
     const onPause = () => setPlaying(false)
+    const onEnded = () => setVideoEnded(true)
     const onTimeUpdate = () => {
       setCurrentTime(video.currentTime)
       const now = Date.now()
@@ -57,12 +61,14 @@ export default function PlayerPage() {
     video.addEventListener('pause', onPause)
     video.addEventListener('timeupdate', onTimeUpdate)
     video.addEventListener('durationchange', onDurationChange)
+    video.addEventListener('ended', onEnded)
 
     return () => {
       video.removeEventListener('play', onPlay)
       video.removeEventListener('pause', onPause)
       video.removeEventListener('timeupdate', onTimeUpdate)
       video.removeEventListener('durationchange', onDurationChange)
+      video.removeEventListener('ended', onEnded)
     }
   }, [data, savedPosition, savePosition])
 
@@ -126,21 +132,41 @@ export default function PlayerPage() {
   if (!data.hls) return <ErrorScreen message="No stream available for this video." onRetry={refetch} />
   if (playerError) return <ErrorScreen message={playerError} onRetry={() => { setPlayerError(null); refetch() }} />
 
+  const nextVideo = data.relatedStreams[0] ?? null
+
+  const handleNextVideo = () => {
+    if (!nextVideo) return
+    setVideoEnded(false)
+    navigate(`/player/${extractVideoId(nextVideo.url)}`)
+  }
+
+  const handleBackToMenu = () => navigate(-1)
+
   return (
     <div className="player-page">
       <div className="player-video-area">
         <VideoPlayer hlsUrl={data.hls} videoRef={videoRef} onError={setPlayerError} />
         {resumeToast && <div className="resume-toast">{resumeToast}</div>}
-        <PlayerOverlay>
-          <PlayerControls
-            playing={playing}
-            currentTime={currentTime}
-            duration={duration}
-            onPlayPause={handlePlayPause}
-            onSeek={handleSeek}
-            title={data.title}
+        {videoEnded && (
+          <VideoEndOverlay
+            nextVideo={nextVideo}
+            onNextVideo={handleNextVideo}
+            onBackToMenu={handleBackToMenu}
           />
-        </PlayerOverlay>
+        )}
+        {!videoEnded && (
+          <PlayerOverlay>
+            <PlayerControls
+              playing={playing}
+              currentTime={currentTime}
+              duration={duration}
+              onPlayPause={handlePlayPause}
+              onSeek={handleSeek}
+              onBack={handleBackToMenu}
+              title={data.title}
+            />
+          </PlayerOverlay>
+        )}
       </div>
       {data.relatedStreams.length > 0 && (
         <div className="related-videos">

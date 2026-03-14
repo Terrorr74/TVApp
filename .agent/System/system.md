@@ -55,8 +55,9 @@ TVApp/
 │       │   │   └── TVKeyboard.tsx  # D-pad-navigable on-screen keyboard
 │       │   ├── player/
 │       │   │   ├── VideoPlayer.tsx    # <video> element + hls.js integration
-│       │   │   ├── PlayerControls.tsx # Play/pause, seek, progress bar
-│       │   │   └── PlayerOverlay.tsx  # Auto-hides controls after 3 s of inactivity
+│       │   │   ├── PlayerControls.tsx # Play/pause, seek, back button, progress bar
+│       │   │   ├── PlayerOverlay.tsx  # Auto-hides controls after 3 s of inactivity
+│       │   │   └── VideoEndOverlay.tsx # End-of-video screen: 10s countdown → next video or back
 │       │   ├── layout/
 │       │   │   ├── AppLayout.tsx  # Sidebar + content area wrapper
 │       │   │   └── Sidebar.tsx    # Left nav: Home / Search / Subscriptions
