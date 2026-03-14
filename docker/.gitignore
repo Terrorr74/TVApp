@@ -1,0 +1,2 @@
+# Postgres data — never commit DB files
+data/db/
